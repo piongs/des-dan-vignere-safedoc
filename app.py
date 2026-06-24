@@ -273,7 +273,7 @@ def api_decrypt_file():
 @login_required
 def api_clear_history():
     history.clear()
-    return redirect(url_for('riwayat'))
+    return jsonify({'ok': True})
 
 if __name__ == '__main__':
     app.run(debug=False, port=5000)
