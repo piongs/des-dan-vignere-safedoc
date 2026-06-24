@@ -300,105 +300,9 @@ textarea.form-ctrl { min-height: 100px; }
 
 /* Actions row */
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
-
-/* ═══════════════════════════════════════════
-   MOBILE RESPONSIVE
-═══════════════════════════════════════════ */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  cursor: pointer;
-  padding: 8px;
-  border: none;
-  background: none;
-  z-index: 300;
-}
-.hamburger span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: var(--text);
-  border-radius: 2px;
-  transition: all .3s;
-}
-
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.45);
-  z-index: 199;
-}
-.sidebar-overlay.active { display: block; }
-
-@media (max-width: 768px) {
-  .hamburger { display: flex; }
-
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform .3s ease;
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .main {
-    margin-left: 0 !important;
-  }
-
-  .topbar {
-    padding: 0 14px;
-  }
-
-  .content {
-    padding: 14px !important;
-  }
-
-  /* Grid responsive */
-  .g2, .g3, .g4 {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Card padding mobile */
-  .card { padding: 14px !important; }
-
-  /* Table scroll */
-  .table-wrap, table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Steps horizontal -> vertical */
-  .steps {
-    flex-direction: column !important;
-  }
-
-  /* Form full width */
-  input, select, textarea, .btn {
-    width: 100%;
-  }
-
-  /* Topbar title shorter on mobile */
-  .page-sub { display: none; }
-
-  /* Stat cards */
-  .stat-val { font-size: 24px !important; }
-}
-
-@media (max-width: 480px) {
-  .topbar-right .status-pill span { display: none; }
-  .card-header { flex-direction: column; align-items: flex-start !important; gap: 8px; }
-}
-
 </style>
 </head>
 <body>
-
-<!-- MOBILE OVERLAY -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -445,10 +349,6 @@ textarea.form-ctrl { min-height: 100px; }
 <main class="main">
   <div class="topbar">
     <div class="topbar-left">
-    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    
       <div class="page-title">{% block page_title %}Halaman{% endblock %}</div>
       <div class="page-sub">{% block page_sub %}{% endblock %}</div>
     </div>
@@ -463,23 +363,5 @@ textarea.form-ctrl { min-height: 100px; }
 </main>
 
 {% block scripts %}{% endblock %}
-
-<script>
-function toggleSidebar() {
-  document.querySelector('.sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('active');
-}
-function closeSidebar() {
-  document.querySelector('.sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('active');
-}
-// Tutup sidebar saat klik nav link di mobile
-document.querySelectorAll('.nav-link').forEach(function(link) {
-  link.addEventListener('click', function() {
-    if (window.innerWidth <= 768) closeSidebar();
-  });
-});
-</script>
-
 </body>
 </html>
