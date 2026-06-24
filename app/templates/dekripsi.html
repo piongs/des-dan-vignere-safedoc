@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Dekripsi Dokumen{% endblock %}
+{% block page_title %}Dekripsi Dokumen{% endblock %}
+{% block page_sub %}Kembalikan dokumen terenkripsi ke bentuk asli menggunakan kunci Vigenere dan kunci DES{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="g2">
+    <!-- KIRI: Form -->
+    <div>
+      <div class="section-title" style="margin-bottom:16px">Upload &amp; Dekripsi</div>
+
+      <!-- Tab -->
+      <div style="display:flex;gap:0;margin-bottom:18px;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+        <button id="tab-file" onclick="setTab('file')"
+          style="flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:var(--purple);color:#fff;transition:all .15s">
+          📁 Dekripsi File
+        </button>
+        <button id="tab-text" onclick="setTab('text')"
+          style="flex:1;padding:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:#fff;color:var(--text2);transition:all .15s">
+          📝 Dekripsi Teks
+        </button>
+      </div>
+
+      <!-- File mode -->
+      <div id="mode-file">
+        <div class="form-group">
+          <label class="form-label">File Terenkripsi (.enc) <span style="color:var(--red)">*</span></label>
+          <input type="file" id="dec-file-inp" accept=".enc" style="display:none" onchange="pickFile(this)">
+          <div class="dropzone" id="dec-dz"
+               onclick="document.getElementById('dec-file-inp').click()"
+               ondragover="event.preventDefault();this.classList.add('over')"
+               ondragleave="this.classList.remove('over')"
+               ondrop="dropF(event)">
+            <div class="dz-icon">🔒</div>
+            <div class="dz-text">Upload file <strong>.enc</strong> hasil enkripsi<br>atau <strong>klik untuk memilih</strong></div>
+          </div>
+          <div id="dec-chip" class="file-chip" style="display:none">
+            <span>🔒</span>
+            <span class="file-chip-name" id="dec-fname">—</span>
+            <span class="file-chip-size" id="dec-fsize">—</span>
+            <button class="btn btn-sm btn-red" onclick="clearFile()">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text mode -->
+      <div id="mode-text" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Ciphertext (Base64) <span style="color:var(--red)">*</span></label>
+          <textarea class="form-ctrl" id="dec-cipher" placeholder="Paste ciphertext (Base64) hasil enkripsi di sini..."></textarea>
+        </div>
+      </div>
+
+      <!-- Kunci Vigenere -->
+      <div class="form-group">
+        <label class="form-label">Kunci Vigenere <span style="color:var(--red)">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" class="form-ctrl" id="dec-vkey" placeholder="Kunci Vigenere yang sama saat enkripsi"
+                 oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'').toUpperCase()">
+          <button class="eye-btn" onclick="toggleEye('dec-vkey',this)">👁</button>
+        </div>
+        <div class="form-hint" style="color:var(--red)">⚠ Harus sama persis dengan kunci yang digunakan saat enkripsi</div>
+      </div>
+
+      <!-- Kunci DES -->
+      <div class="form-group">
+        <label class="form-label">Kunci DES <span style="color:var(--red)">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" class="form-ctrl" id="dec-dkey" placeholder="Kunci DES yang sama saat enkripsi">
+          <button class="eye-btn" onclick="toggleEye('dec-dkey',this)">👁</button>
+        </div>
+        <div class="form-hint" style="color:var(--red)">⚠ Harus sama persis dengan kunci DES yang digunakan saat enkripsi</div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-green" id="dec-btn" onclick="doDecrypt()">
+          🔓 Dekripsi Sekarang <div class="spinner" id="dec-spin"></div>
+        </button>
+        <button class="btn btn-ghost" onclick="resetDec()">↺ Reset</button>
+      </div>
+      <div id="dec-alert" style="margin-top:12px"></div>
+
+      <!-- Result teks -->
+      <div id="dec-result" style="display:none;margin-top:18px">
+        <div class="divider"></div>
+        <div class="result-group">
+          <div class="result-label">🏛 Hasil DES Decrypt (sebelum Vigenere)</div>
+          <div class="result-box" id="r-des" style="color:var(--blue)">
+            <button class="copy-btn" onclick="copyText('r-des')">Salin</button>
+          </div>
+        </div>
+        <div class="result-group">
+          <div class="result-label">✅ Teks Asli (setelah Vigenere Decrypt)</div>
+          <div class="result-box" id="r-plain" style="color:var(--green);font-size:14px">
+            <button class="copy-btn" onclick="copyText('r-plain')">Salin</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KANAN: Info -->
+    <div>
+      <div class="section-title" style="margin-bottom:16px">Yang Dibutuhkan untuk Dekripsi</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px">
+        <div style="display:flex;gap:12px;align-items:center;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+          <span style="font-size:22px">📄</span>
+          <div><div style="font-size:13px;font-weight:600">File .enc</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Dokumen yang sudah dienkripsi sebelumnya</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+          <span style="font-size:22px">🔑</span>
+          <div><div style="font-size:13px;font-weight:600">Kunci Vigenere</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Kunci huruf yang Anda buat saat enkripsi</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+          <span style="font-size:22px">🔐</span>
+          <div><div style="font-size:13px;font-weight:600">Kunci DES</div><div style="font-size:12px;color:var(--text2);margin-top:2px">Kunci DES yang Anda buat saat enkripsi</div></div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:12px"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="width:22px;height:22px;border-radius:50%;background:var();color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0"></span>
+          <span style="font-size:13px;color:var(--text2);line-height:1.55"><strong></strong></span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="width:22px;height:22px;border-radius:50%;background:var();color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0"></span>
+          <span style="font-size:13px;color:var(--text2);line-height:1.55"><strong></strong> <code style="font-family:var(--mono);color:var(--purple)"></code></span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <span style="width:22px;height:22px;border-radius:50%;background:var();color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0"></span>
+          <span style="font-size:13px;color:var(--text2);line-height:1.55"></span>
+        </div>
+      </div>
+
+      <div class="alert alert-warn">
+        ⚠ Pastikan kunci Vigenere dan kunci DES <strong>sama persis</strong> dengan yang digunakan saat enkripsi. Salah satu kunci yang berbeda akan menyebabkan dekripsi gagal.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let decFile = null;
+let activeTab = 'file';
+
+function setTab(t) {
+  activeTab = t;
+  document.getElementById('mode-file').style.display = t==='file'?'block':'none';
+  document.getElementById('mode-text').style.display = t==='text'?'block':'none';
+  const purple = 'var(--purple)';
+  document.getElementById('tab-file').style.background = t==='file'?purple:'#fff';
+  document.getElementById('tab-file').style.color = t==='file'?'#fff':'var(--text2)';
+  document.getElementById('tab-text').style.background = t==='text'?purple:'#fff';
+  document.getElementById('tab-text').style.color = t==='text'?'#fff':'var(--text2)';
+  document.getElementById('dec-result').style.display='none';
+  setAlert('dec-alert','','');
+}
+
+function pickFile(inp){const f=inp.files[0];if(!f)return;decFile=f;showChip(f);}
+function dropF(ev){ev.preventDefault();document.getElementById('dec-dz').classList.remove('over');const f=ev.dataTransfer.files[0];if(!f)return;decFile=f;showChip(f);}
+function showChip(f){document.getElementById('dec-chip').style.display='flex';document.getElementById('dec-fname').textContent=f.name;document.getElementById('dec-fsize').textContent=fmtBytes(f.size);}
+function clearFile(){decFile=null;document.getElementById('dec-chip').style.display='none';document.getElementById('dec-file-inp').value='';}
+function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(1)+' MB';}
+function toggleEye(id,btn){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';btn.textContent=el.type==='password'?'👁':'🙈';}
+function setAlert(id,msg,type){document.getElementById(id).innerHTML=msg?`<div class="alert alert-${type}">${msg}</div>`:'';}
+function setSpinner(id,on){document.getElementById(id).style.display=on?'inline-block':'none';}
+function copyText(id){navigator.clipboard.writeText(document.getElementById(id).textContent.replace('Salin','').trim());}
+function resetDec(){clearFile();document.getElementById('dec-vkey').value='';document.getElementById('dec-dkey').value='';document.getElementById('dec-cipher').value='';document.getElementById('dec-result').style.display='none';setAlert('dec-alert','','');}
+
+async function doDecrypt(){
+  const vk=document.getElementById('dec-vkey').value.trim();
+  const dk=document.getElementById('dec-dkey').value.trim();
+  setAlert('dec-alert','','');
+  if(!vk){setAlert('dec-alert','❌ Kunci Vigenere wajib diisi (hanya huruf A–Z).','err');return;}
+  if(!dk){setAlert('dec-alert','❌ Kunci DES wajib diisi.','err');return;}
+
+  if(activeTab==='file'){
+    if(!decFile){setAlert('dec-alert','❌ Pilih file .enc terlebih dahulu.','err');return;}
+    setSpinner('dec-spin',true);
+    const fd=new FormData();
+    fd.append('file',decFile);fd.append('vigenere_key',vk);fd.append('des_key',dk);
+    try{
+      const res=await fetch('/api/decrypt_file',{method:'POST',body:fd});
+      setSpinner('dec-spin',false);
+      if(!res.ok){const d=await res.json();setAlert('dec-alert','❌ '+d.error,'err');return;}
+      const blob=await res.blob();
+      const cd=res.headers.get('Content-Disposition')||'';
+      const m=cd.match(/filename=(.+)/);
+      const fname=m?m[1].replace(/"/g,''):decFile.name.replace('.enc','');
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();
+      setAlert('dec-alert','✅ File berhasil didekripsi dan diunduh sebagai <strong>'+fname+'</strong>','ok');
+    }catch(e){setSpinner('dec-spin',false);setAlert('dec-alert','❌ Terjadi kesalahan koneksi.','err');}
+  } else {
+    const cipher=document.getElementById('dec-cipher').value.trim();
+    if(!cipher){setAlert('dec-alert','❌ Ciphertext tidak boleh kosong.','err');return;}
+    setSpinner('dec-spin',true);
+    try{
+      const res=await fetch('/api/decrypt',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({cipher,vigenere_key:vk,des_key:dk})});
+      setSpinner('dec-spin',false);
+      const d=await res.json();
+      if(!d.success){setAlert('dec-alert','❌ '+d.error,'err');return;}
+      document.getElementById('r-des').innerHTML='<button class="copy-btn" onclick="copyText(\'r-des\')">Salin</button>'+d.des_result;
+      document.getElementById('r-plain').innerHTML='<button class="copy-btn" onclick="copyText(\'r-plain\')">Salin</button>'+d.plaintext;
+      document.getElementById('dec-result').style.display='block';
+      setAlert('dec-alert','✅ Dekripsi berhasil! Teks asli ditampilkan di bawah.','ok');
+    }catch(e){setSpinner('dec-spin',false);setAlert('dec-alert','❌ Terjadi kesalahan koneksi.','err');}
+  }
+}
+</script>
+{% endblock %}

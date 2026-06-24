@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAFE DOCUMENT Login</title>
+
+<style>
+:root{
+    --blue:#2563eb;
+    --blue-dark:#1d4ed8;
+    --border:#dbe3ee;
+    --text:#1e293b;
+    --text2:#64748b;
+    --font:'Inter',sans-serif;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:var(--font);
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:linear-gradient(
+        135deg,
+        #eef4ff,
+        #498be3
+    );
+
+    padding:20px;
+}
+
+.login-wrap{
+    width:100%;
+    max-width:400px;
+
+    background:white;
+
+    border-radius:24px;
+
+    border:1px solid #e5e7eb;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.10);
+
+    overflow:hidden;
+}
+
+.login-right{
+    padding:20px;
+}
+
+/* HEADER */
+
+.login-header{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.logo-box{
+    width:60px;
+    height:60px;
+
+    margin:auto;
+    margin-bottom:18px;
+
+    border-radius:24px;
+
+    background:linear-gradient(
+        135deg,
+        #4f46e5,
+        #2563eb
+    );
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:42px;
+
+    color:white;
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,.30);
+}
+
+.login-header h1{
+    font-size:30px;
+    font-weight:800;
+    color:var(--text);
+}
+
+.login-header p{
+    margin-top:8px;
+    color:var(--text2);
+    font-size:14px;
+}
+
+/* FORM */
+
+.form-group{
+    margin-bottom:18px;
+}
+
+.form-label{
+    display:block;
+    margin-bottom:8px;
+
+    font-size:14px;
+    font-weight:700;
+
+    color:var(--text);
+}
+
+.form-ctrl{
+    width:100%;
+
+    padding:14px;
+
+    border:1.5px solid var(--border);
+    border-radius:12px;
+
+    font-size:14px;
+
+    transition:.2s;
+    outline:none;
+}
+
+.form-ctrl:focus{
+    border-color:var(--blue);
+
+    box-shadow:
+        0 0 0 4px rgba(37,99,235,.12);
+}
+
+.pw-wrap{
+    position:relative;
+}
+
+.pw-wrap .form-ctrl{
+    padding-right:45px;
+}
+
+.eye{
+    position:absolute;
+    right:15px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    border:none;
+    background:none;
+
+    cursor:pointer;
+    font-size:18px;
+}
+
+/* BUTTON */
+
+.btn-login{
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+    border-radius:12px;
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color:white;
+
+    font-size:15px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    margin-top:8px;
+}
+
+.btn-login:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,.35);
+}
+
+/* ERROR */
+
+.err-box{
+    background:#fef2f2;
+
+    color:#b91c1c;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    margin-bottom:18px;
+
+    border:1px solid #fecaca;
+
+    text-align:center;
+}
+
+/* FOOTER */
+
+.footer-text{
+    text-align:center;
+
+    margin-top:22px;
+
+    color:#94a3b8;
+
+    font-size:12px;
+}
+
+@media(max-width:600px){
+
+    .login-right{
+        padding:30px;
+    }
+
+    .logo-box{
+        width:75px;
+        height:75px;
+        font-size:36px;
+    }
+
+    .login-header h1{
+        font-size:26px;
+    }
+
+}
+</style>
+
+</head>
+<body>
+
+<div class="login-wrap">
+
+    <div class="login-right">
+
+        <div class="login-header">
+
+            <div class="logo-box">
+                🔐
+            </div>
+
+            <h1>SAFEDOC</h1>
+
+            <p>
+                Sistem Keamanan Dokumen Digital
+            </p>
+
+        </div>
+
+        {% if error %}
+        <div class="err-box">
+            ❌ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post">
+
+            <div class="form-group">
+                <label class="form-label">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    class="form-ctrl"
+                    placeholder="Masukkan username"
+                    autofocus
+                    required>
+            </div>
+
+            <div class="form-group">
+
+                <label class="form-label">
+                    Password
+                </label>
+
+                <div class="pw-wrap">
+
+                    <input
+                        type="password"
+                        name="password"
+                        id="pwd"
+                        class="form-ctrl"
+                        placeholder="Masukkan password"
+                        required>
+
+                    <button
+                        type="button"
+                        class="eye"
+                        onclick="togglePwd()">
+                        👁
+                    </button>
+
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn-login">
+                🔒 Masuk ke Sistem
+            </button>
+
+        </form>
+
+        <div class="footer-text">
+            SAFEDOC © 2026 • Vigenère Cipher + DES Encryption
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function togglePwd() {
+    const el = document.getElementById('pwd');
+    el.type = el.type === 'password' ? 'text' : 'password';
+}
+</script>
+
+</body>
+</html>

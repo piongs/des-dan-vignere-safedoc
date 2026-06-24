@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_sub %}Selamat datang, {{ username }}! Sistem enkripsi Vigenere + DES siap digunakan.{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<div class="g3" style="margin-bottom:22px">
+  <div class="stat-card">
+    <div>
+      <div class="stat-num" style="color:var(--text)">{{ total }}</div>
+      <div class="stat-label">Total Proses<br><small>Semua aktivitas enkripsi &amp; dekripsi</small></div>
+    </div>
+    <div class="stat-icon" style="background:#f0f4ff">📊</div>
+  </div>
+  <div class="stat-card">
+    <div>
+      <div class="stat-num" style="color:var(--green)">{{ enc }}</div>
+      <div class="stat-label">Enkripsi<br><small>Dokumen berhasil dienkripsi</small></div>
+    </div>
+    <div class="stat-icon" style="background:var(--green-lt)">🔒</div>
+  </div>
+  <div class="stat-card">
+    <div>
+      <div class="stat-num" style="color:var(--purple)">{{ dec }}</div>
+      <div class="stat-label">Dekripsi<br><small>Dokumen berhasil didekripsi</small></div>
+    </div>
+    <div class="stat-icon" style="background:var(--purple-lt)">🔓</div>
+  </div>
+</div>
+
+<!-- Quick actions -->
+<div class="g2" style="margin-bottom:22px">
+  <a href="{{ url_for('enkripsi') }}" style="text-decoration:none">
+    <div class="card" style="cursor:pointer;transition:all .2s;border-color:transparent"
+         onmouseover="this.style.borderColor='var(--blue)';this.style.boxShadow='var(--shadow-md)'"
+         onmouseout="this.style.borderColor='transparent';this.style.boxShadow='var(--shadow)'">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:46px;height:46px;border-radius:12px;background:var(--green-lt);display:grid;place-items:center;font-size:22px">🔒</div>
+          <div>
+            <div style="font-size:14px;font-weight:700">Enkripsi Dokumen</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px">Vigenere Cipher + DES-CBC dua lapis</div>
+          </div>
+        </div>
+        <span style="color:var(--text3);font-size:20px">›</span>
+      </div>
+    </div>
+  </a>
+  <a href="{{ url_for('dekripsi') }}" style="text-decoration:none">
+    <div class="card" style="cursor:pointer;transition:all .2s;border-color:transparent"
+         onmouseover="this.style.borderColor='var(--purple)';this.style.boxShadow='var(--shadow-md)'"
+         onmouseout="this.style.borderColor='transparent';this.style.boxShadow='var(--shadow)'">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:46px;height:46px;border-radius:12px;background:var(--purple-lt);display:grid;place-items:center;font-size:22px">🔓</div>
+          <div>
+            <div style="font-size:14px;font-weight:700">Dekripsi Dokumen</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px">Kembalikan dokumen ke bentuk asli</div>
+          </div>
+        </div>
+        <span style="color:var(--text3);font-size:20px">›</span>
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- Recent history -->
+<div class="card">
+  <div class="section-hd">
+    <div class="section-title">Riwayat Terbaru</div>
+    <a href="{{ url_for('riwayat') }}" style="font-size:12px;color:var(--blue);font-weight:600;text-decoration:none">Lihat semua →</a>
+  </div>
+  {% if recent %}
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Waktu</th><th>Mode</th><th>File</th><th>User</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in recent %}
+      <tr>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--text2)">{{ h.waktu }}</td>
+        <td><span class="badge badge-{{ 'enc' if h.mode=='enkripsi' else 'dec' }}">{{ h.mode }}</span></td>
+        <td>{{ h.file }}</td>
+        <td>{{ h.user }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Belum ada aktivitas. Mulai enkripsi dokumen pertama Anda!</div></div>
+  {% endif %}
+</div>
+{% endblock %}

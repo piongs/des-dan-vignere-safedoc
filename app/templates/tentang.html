@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+{% block title %}Tentang Algoritma{% endblock %}
+{% block page_title %}Tentang Algoritma{% endblock %}
+{% block page_sub %}Penjelasan lengkap Double Encryption: Vigenere Cipher (mod 26) + DES-CBC — untuk presentasi{% endblock %}
+
+{% block content %}
+
+<!-- ═══ KONSEP DOUBLE ENCRYPTION ═══ -->
+<div class="card" style="margin-bottom:20px">
+  <div class="section-title" style="margin-bottom:8px">🔐 Konsep Double Encryption</div>
+  <p style="font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:18px">
+    <strong>SecureDoc</strong> menerapkan dua lapis enkripsi secara berurutan (<em>cascaded encryption</em>).
+    Lapis pertama menggunakan <strong>Vigenere Cipher</strong> — algoritma kriptografi klasik yang bekerja pada level karakter.
+    Hasilnya kemudian dienkripsi lagi menggunakan <strong>DES-CBC</strong> — standar enkripsi blok modern.
+    Dengan pendekatan ini, penyerang harus memecahkan <em>dua lapisan sekaligus</em> untuk mendapatkan plaintext.
+  </p>
+
+  <!-- Flow diagram -->
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:14px">Alur Enkripsi</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap">
+      <div style="padding:10px 18px;border-radius:8px;background:#fff;border:1.5px solid var(--border);font-size:13px;font-weight:600">
+        📄 Plaintext<br><span style="font-size:11px;color:var(--text3);font-weight:400">Teks/File asli</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="font-size:18px;color:var(--green)">→</span>
+        <span style="font-size:10px;color:var(--green);font-weight:700">LAPIS 1</span>
+      </div>
+      <div style="padding:10px 18px;border-radius:8px;background:var(--green-lt);border:1.5px solid rgba(5,150,105,.25);font-size:13px;font-weight:600;color:var(--green)">
+        🔤 Vigenere<br><span style="font-size:11px;font-weight:400">C = (P+K) mod 26</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="font-size:18px;color:var(--blue)">→</span>
+        <span style="font-size:10px;color:var(--blue);font-weight:700">LAPIS 2</span>
+      </div>
+      <div style="padding:10px 18px;border-radius:8px;background:var(--blue-lt);border:1.5px solid rgba(37,99,235,.25);font-size:13px;font-weight:600;color:var(--blue)">
+        🏛 DES-CBC<br><span style="font-size:11px;font-weight:400">C = DES(P XOR IV, K)</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <span style="font-size:18px;color:var(--amber)">→</span>
+        <span style="font-size:10px;color:var(--amber);font-weight:700">OUTPUT</span>
+      </div>
+      <div style="padding:10px 18px;border-radius:8px;background:var(--amber-lt);border:1.5px solid rgba(217,119,6,.25);font-size:13px;font-weight:600;color:var(--amber)">
+        🔒 File .enc<br><span style="font-size:11px;font-weight:400">Base64 encoded</span>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:var(--text3)">
+      Alur Dekripsi = kebalikan: File .enc → DES-CBC Decrypt → Vigenere Decrypt → Plaintext
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VIGENERE CIPHER ═══ -->
+<div class="card" style="margin-bottom:20px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+    <div style="width:32px;height:32px;border-radius:8px;background:var(--green-lt);display:grid;place-items:center;font-size:16px">🔤</div>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--green)">① Vigenere Cipher</div>
+      <div style="font-size:12px;color:var(--text2)">Algoritma kriptografi klasik · Bekerja pada level karakter · mod 26</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="g2" style="gap:24px">
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">📖 Sejarah &amp; Konsep</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:12px">
+        Vigenere Cipher diciptakan oleh <strong>Blaise de Vigenère</strong> pada abad ke-16 (1553).
+        Algoritma ini merupakan pengembangan dari <em>Caesar Cipher</em> — jika Caesar menggeser semua huruf
+        dengan nilai tetap, Vigenere menggunakan kunci berulang sehingga setiap huruf digeser dengan nilai yang berbeda.
+      </p>
+      <p style="font-size:13px;color:var(--text2);line-height:1.75">
+        Algoritma ini bekerja pada level <strong>karakter alfabet (A–Z)</strong>.
+        Karakter non-alfabet seperti angka, spasi, tanda baca <strong>tidak diubah</strong> dan dilewati begitu saja.
+        Kunci yang digunakan adalah serangkaian huruf yang diulang mengikuti panjang teks.
+      </p>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">📐 Formula Matematika</div>
+      <div style="background:#1a2332;border-radius:8px;padding:16px 18px;font-family:var(--mono);font-size:13px;color:#e2e8f0;line-height:2">
+        <div style="color:#64748b;font-size:11px;margin-bottom:4px">// ENKRIPSI</div>
+        <div><span style="color:#a78bfa">C<sub style="font-size:10px">i</sub></span> = (<span style="color:#34d399">P<sub style="font-size:10px">i</sub></span> + <span style="color:#60a5fa">K<sub style="font-size:10px">i</sub></span>) <span style="color:#fbbf24">mod 26</span></div>
+        <div style="color:#64748b;font-size:11px;margin-top:8px;margin-bottom:4px">// DEKRIPSI</div>
+        <div><span style="color:#34d399">P<sub style="font-size:10px">i</sub></span> = (<span style="color:#a78bfa">C<sub style="font-size:10px">i</sub></span> - <span style="color:#60a5fa">K<sub style="font-size:10px">i</sub></span> + 26) <span style="color:#fbbf24">mod 26</span></div>
+      </div>
+      <div style="margin-top:10px;background:var(--bg);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.7">
+        <strong>P<sub>i</sub></strong> = posisi huruf plaintext ke-i (A=0, B=1, ..., Z=25)<br>
+        <strong>K<sub>i</sub></strong> = posisi huruf kunci ke-i (A=0, B=1, ..., Z=25)<br>
+        <strong>C<sub>i</sub></strong> = posisi huruf ciphertext ke-i<br>
+        <strong>mod 26</strong> = sisa bagi 26 (jumlah huruf alfabet)
+      </div>
+    </div>
+  </div>
+
+  <!-- Contoh step-by-step -->
+  <div style="margin-top:20px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">💡 Contoh Enkripsi Langkah per Langkah</div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);text-align:center">
+        <div style="padding:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700">No.</div>
+        <div style="padding:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700">Plaintext (P)</div>
+        <div style="padding:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700">Nilai P</div>
+        <div style="padding:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700">Kunci (K)</div>
+        <div style="padding:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700">Nilai K</div>
+        <div style="padding:8px;background:var(--blue);color:#fff;font-size:11px;font-weight:700">Cipher = (P+K)%26</div>
+      </div>
+      {% set example = [('H',7,'K',10,'R'),('E',4,'U',20,'Y'),('L',11,'N',13,'Y'),('L',11,'C',2,'N'),('O',14,'I',8,'W')] %}
+      {% for row in example %}
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);text-align:center;border-top:1px solid var(--border)">
+        <div style="padding:9px;font-size:12px;color:var(--text3)">{{ loop.index }}</div>
+        <div style="padding:9px;font-size:14px;font-weight:700;font-family:var(--mono);color:var(--text)">{{ row[0] }}</div>
+        <div style="padding:9px;font-size:12px;color:var(--text2)">{{ row[1] }}</div>
+        <div style="padding:9px;font-size:14px;font-weight:700;font-family:var(--mono);color:var(--blue)">{{ row[2] }}</div>
+        <div style="padding:9px;font-size:12px;color:var(--text2)">{{ row[3] }}</div>
+        <div style="padding:9px;font-size:14px;font-weight:700;font-family:var(--mono);color:var(--green)">{{ row[4] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-top:8px">
+      Plaintext: <strong>HELLO</strong> · Kunci: <strong>KUNCI</strong> (diulang) → Ciphertext: <strong>RYYNW</strong>
+    </div>
+  </div>
+
+  <!-- Kelebihan & Kekurangan -->
+  <div class="g2" style="margin-top:20px;gap:16px">
+    <div style="background:var(--green-lt);border:1px solid rgba(5,150,105,.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">✅ Kelebihan Vigenere</div>
+      <ul style="font-size:12px;color:var(--text2);line-height:1.8;padding-left:16px">
+        <li>Lebih kuat dari Caesar Cipher karena kunci berubah</li>
+        <li>Frekuensi huruf lebih sulit dianalisis</li>
+        <li>Sederhana dan mudah dipahami</li>
+        <li>Kunci fleksibel, bisa panjang atau pendek</li>
+      </ul>
+    </div>
+    <div style="background:var(--red-lt);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">⚠ Kelemahan Vigenere</div>
+      <ul style="font-size:12px;color:var(--text2);line-height:1.8;padding-left:16px">
+        <li>Rentan terhadap analisis <em>Kasiski</em> jika kunci pendek</li>
+        <li>Hanya mengenkripsi huruf alfabet (A–Z)</li>
+        <li>Tidak aman jika digunakan sendiri untuk data modern</li>
+        <li>Dikombinasikan dengan DES untuk menutupi kelemahan ini</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DES-CBC ═══ -->
+<div class="card" style="margin-bottom:20px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+    <div style="width:32px;height:32px;border-radius:8px;background:var(--blue-lt);display:grid;place-items:center;font-size:16px">🏛</div>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--blue)">② DES-CBC (Data Encryption Standard)</div>
+      <div style="font-size:12px;color:var(--text2)">Enkripsi blok simetris · Kunci 56-bit · 16 putaran Feistel · Mode CBC</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="g2" style="gap:24px">
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">📖 Sejarah &amp; Konsep</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:12px">
+        DES dikembangkan oleh <strong>IBM</strong> dan ditetapkan sebagai standar enkripsi AS oleh <strong>NIST</strong> pada tahun 1977.
+        DES adalah algoritma enkripsi <em>blok simetris</em> — artinya kunci yang sama digunakan untuk enkripsi dan dekripsi.
+      </p>
+      <p style="font-size:13px;color:var(--text2);line-height:1.75">
+        DES bekerja dalam <strong>blok 64-bit (8 byte)</strong> dengan kunci efektif <strong>56-bit</strong>.
+        Proses enkripsi melibatkan <strong>16 putaran jaringan Feistel</strong> yang melakukan substitusi dan permutasi berulang.
+        Mode <strong>CBC (Cipher Block Chaining)</strong> membuat setiap blok bergantung pada blok sebelumnya,
+        sehingga pola yang sama dalam plaintext menghasilkan ciphertext yang berbeda.
+      </p>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">📐 Detail Teknis DES-CBC</div>
+      <div style="background:#1a2332;border-radius:8px;padding:16px 18px;font-family:var(--mono);font-size:12px;color:#e2e8f0;line-height:1.9">
+        <div style="color:#64748b;font-size:11px">// ENKRIPSI (tiap blok)</div>
+        <div><span style="color:#a78bfa">C<sub>i</sub></span> = DES_Enc(<span style="color:#34d399">P<sub>i</sub></span> XOR <span style="color:#fbbf24">C<sub>i-1</sub></span>, <span style="color:#60a5fa">K_des</span>)</div>
+        <div style="color:#64748b;font-size:11px;margin-top:8px">// DEKRIPSI (tiap blok)</div>
+        <div><span style="color:#34d399">P<sub>i</sub></span> = DES_Dec(<span style="color:#a78bfa">C<sub>i</sub></span>, <span style="color:#60a5fa">K_des</span>) XOR <span style="color:#fbbf24">C<sub>i-1</sub></span></div>
+        <div style="color:#64748b;font-size:11px;margin-top:8px">// FORMAT FILE .enc</div>
+        <div><span style="color:#fbbf24">[IV 8 byte]</span> + <span style="color:#a78bfa">[Ciphertext]</span></div>
+      </div>
+      <div style="margin-top:10px;background:var(--bg);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.7">
+        <strong>IV</strong> = Initialization Vector 64-bit (acak tiap enkripsi)<br>
+        <strong>C<sub>0</sub></strong> = IV (untuk blok pertama)<br>
+        <strong>K_des</strong> = kunci 8 byte dari SHA-256(kunci Anda)[:8]<br>
+        <strong>Padding</strong> = PKCS#7 ke kelipatan 8 byte<br>
+        <strong>Blok</strong> = 64-bit, <strong>16 putaran</strong> Feistel per blok
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode CBC diagram -->
+  <div style="margin-top:20px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">🔗 Cara Kerja Mode CBC (Cipher Block Chaining)</div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:18px;overflow-x:auto">
+      <div style="display:flex;align-items:center;gap:6px;min-width:600px;justify-content:center">
+        <!-- Block 1 -->
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">IV (acak)</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--amber);border-radius:6px;background:var(--amber-lt);font-size:12px;font-weight:700;color:var(--amber)">IV</div>
+        </div>
+        <div style="font-size:16px;color:var(--text3)">⊕</div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Blok 1</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--green);border-radius:6px;background:var(--green-lt);font-size:12px;font-weight:700;color:var(--green)">P₁</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3)">→</div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">DES_Enc(K)</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--blue);border-radius:6px;background:var(--blue-lt);font-size:12px;font-weight:700;color:var(--blue)">DES</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3)">→</div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Ciphertext 1</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--purple);border-radius:6px;background:var(--purple-lt);font-size:12px;font-weight:700;color:var(--purple)">C₁</div>
+        </div>
+        <div style="font-size:16px;color:var(--text3)">⊕</div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Blok 2</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--green);border-radius:6px;background:var(--green-lt);font-size:12px;font-weight:700;color:var(--green)">P₂</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3)">→</div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">DES_Enc(K)</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--blue);border-radius:6px;background:var(--blue-lt);font-size:12px;font-weight:700;color:var(--blue)">DES</div>
+        </div>
+        <div style="font-size:18px;color:var(--text3)">→</div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Ciphertext 2</div>
+          <div style="padding:8px 14px;border:1.5px solid var(--purple);border-radius:6px;background:var(--purple-lt);font-size:12px;font-weight:700;color:var(--purple)">C₂</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:10px">⊕ = XOR · IV disimpan di awal file .enc · C₁ digunakan sebagai "IV" untuk blok berikutnya</div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-top:20px;gap:16px">
+    <div style="background:var(--green-lt);border:1px solid rgba(5,150,105,.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">✅ Kelebihan DES-CBC</div>
+      <ul style="font-size:12px;color:var(--text2);line-height:1.8;padding-left:16px">
+        <li>Enkripsi pada level byte — mengenkripsi semua karakter</li>
+        <li>IV acak membuat enkripsi yang sama menghasilkan output berbeda</li>
+        <li>Mode CBC menyebarkan pola, lebih aman dari ECB</li>
+        <li>Standar yang sudah terbukti dan banyak dipelajari</li>
+      </ul>
+    </div>
+    <div style="background:var(--red-lt);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">⚠ Kelemahan DES</div>
+      <ul style="font-size:12px;color:var(--text2);line-height:1.8;padding-left:16px">
+        <li>Kunci 56-bit sudah dianggap tidak aman untuk aplikasi modern</li>
+        <li>Rentan terhadap <em>brute force</em> dengan komputasi modern</li>
+        <li>Digantikan AES di industri, tapi masih relevan untuk pembelajaran</li>
+        <li>Dikombinasikan Vigenere untuk menambah kompleksitas</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ IMPLEMENTASI ═══ -->
+<div class="card" style="margin-bottom:20px">
+  <div style="font-size:15px;font-weight:800;margin-bottom:4px">⚙ Implementasi dalam Aplikasi Ini</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Cara kerja konkret SecureDoc dalam kode Python</div>
+  <div class="divider"></div>
+
+  <div class="g2" style="gap:24px">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px">Vigenere — Python</div>
+      <div style="background:#1a2332;border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:12px;color:#e2e8f0;line-height:1.8;overflow-x:auto">
+<span style="color:#64748b"># Enkripsi Vigenere (mod 26)</span>
+<span style="color:#60a5fa">def</span> <span style="color:#34d399">vigenere_encrypt</span>(plaintext, key):
+    key = key.upper()
+    result = []
+    ki = <span style="color:#fbbf24">0</span>
+    <span style="color:#60a5fa">for</span> ch <span style="color:#60a5fa">in</span> plaintext:
+        <span style="color:#60a5fa">if</span> ch.isalpha():
+            shift = <span style="color:#60a5fa">ord</span>(key[ki % <span style="color:#60a5fa">len</span>(key)]) - <span style="color:#60a5fa">ord</span>(<span style="color:#fbbf24">'A'</span>)
+            base  = <span style="color:#60a5fa">ord</span>(<span style="color:#fbbf24">'A'</span>) <span style="color:#60a5fa">if</span> ch.isupper() <span style="color:#60a5fa">else</span> <span style="color:#60a5fa">ord</span>(<span style="color:#fbbf24">'a'</span>)
+            result.append(<span style="color:#60a5fa">chr</span>((<span style="color:#60a5fa">ord</span>(ch) - base + shift) % <span style="color:#fbbf24">26</span> + base))
+            ki += <span style="color:#fbbf24">1</span>
+        <span style="color:#60a5fa">else</span>:
+            result.append(ch) <span style="color:#64748b"># non-alpha tidak diubah</span>
+    <span style="color:#60a5fa">return</span> <span style="color:#fbbf24">''</span>.join(result)
+      </div>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">DES-CBC — Python</div>
+      <div style="background:#1a2332;border-radius:8px;padding:14px 16px;font-family:var(--mono);font-size:12px;color:#e2e8f0;line-height:1.8;overflow-x:auto">
+<span style="color:#64748b"># Enkripsi DES-CBC</span>
+<span style="color:#60a5fa">def</span> <span style="color:#34d399">des_encrypt</span>(data: bytes, key_str: str):
+    key    = hashlib.sha256(
+               key_str.encode()).digest()[:<span style="color:#fbbf24">8</span>]
+    cipher = DES.new(key, DES.MODE_CBC)
+    ct     = cipher.encrypt(
+               pad(data, DES.block_size))
+    <span style="color:#64748b"># simpan IV di depan ciphertext</span>
+    <span style="color:#60a5fa">return</span> cipher.iv + ct
+
+<span style="color:#64748b"># Dekripsi DES-CBC</span>
+<span style="color:#60a5fa">def</span> <span style="color:#34d399">des_decrypt</span>(data: bytes, key_str: str):
+    key        = hashlib.sha256(
+                   key_str.encode()).digest()[:<span style="color:#fbbf24">8</span>]
+    iv, ct     = data[:<span style="color:#fbbf24">8</span>], data[<span style="color:#fbbf24">8</span>:]
+    cipher     = DES.new(key, DES.MODE_CBC, iv=iv)
+    <span style="color:#60a5fa">return</span> unpad(cipher.decrypt(ct), DES.block_size)
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:18px;background:var(--blue-lt);border:1px solid rgba(37,99,235,.2);border-radius:8px;padding:14px 16px">
+    <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">📋 Alur Lengkap dalam Kode</div>
+    <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text2);line-height:1.7">
+      <span style="color:var(--blue);font-weight:700;white-space:nowrap">Enkripsi:</span>
+      <span>
+        (1) Baca file → decode UTF-8 atau base64<br>
+        (2) Jalankan <code style="font-family:var(--mono);background:rgba(37,99,235,.1);padding:1px 5px;border-radius:3px">vigenere_encrypt(teks, kunci_vigenere)</code><br>
+        (3) Encode hasil ke bytes UTF-8<br>
+        (4) Jalankan <code style="font-family:var(--mono);background:rgba(37,99,235,.1);padding:1px 5px;border-radius:3px">des_encrypt(bytes, kunci_des)</code><br>
+        (5) Encode ke Base64 → simpan sebagai file .enc
+      </span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text2);line-height:1.7;margin-top:8px">
+      <span style="color:var(--purple);font-weight:700;white-space:nowrap">Dekripsi:</span>
+      <span>
+        (1) Baca file .enc → decode Base64<br>
+        (2) Jalankan <code style="font-family:var(--mono);background:rgba(37,99,235,.1);padding:1px 5px;border-radius:3px">des_decrypt(data, kunci_des)</code> → ambil IV 8 byte pertama<br>
+        (3) Decode bytes ke teks UTF-8<br>
+        (4) Jalankan <code style="font-family:var(--mono);background:rgba(37,99,235,.1);padding:1px 5px;border-radius:3px">vigenere_decrypt(teks, kunci_vigenere)</code><br>
+        (5) Hasil = plaintext asli
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PERBANDINGAN ═══ -->
+<div class="card">
+  <div style="font-size:15px;font-weight:800;margin-bottom:16px">📊 Perbandingan Kedua Algoritma</div>
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Aspek</th>
+        <th>Vigenere Cipher</th>
+        <th>DES-CBC</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set rows = [
+        ('Jenis','Kriptografi klasik','Kriptografi modern (blok)'),
+        ('Era','1553 (abad ke-16)','1977 (standar NIST)'),
+        ('Level operasi','Karakter alfabet (A–Z)','Byte (0–255)'),
+        ('Panjang kunci','Bebas (huruf A–Z)','Efektif 56-bit (8 byte)'),
+        ('Formula enkripsi','C = (P + K) mod 26','C = DES_Enc(P XOR C_prev, K)'),
+        ('Karakter non-huruf','Tidak diubah (dilewati)','Semua byte dienkripsi'),
+        ('IV (Initialization Vector)','Tidak ada','Ya, 8 byte acak per enkripsi'),
+        ('Padding','Tidak perlu','PKCS#7 ke kelipatan 8 byte'),
+        ('Keamanan','Lemah (mudah dipecahkan)','Sedang (56-bit sudah usang)'),
+        ('Peran dalam sistem','Lapis pertama (obfuscation)','Lapis kedua (enkripsi kuat)'),
+      ] %}
+      {% for r in rows %}
+      <tr>
+        <td style="font-weight:600">{{ r[0] }}</td>
+        <td style="color:var(--green)">{{ r[1] }}</td>
+        <td style="color:var(--blue)">{{ r[2] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:18px;background:var(--amber-lt);border:1px solid rgba(217,119,6,.2);border-radius:8px;padding:14px 16px">
+    <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px">💡 Mengapa Mengkombinasikan Keduanya?</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7">
+      Vigenere sendiri lemah terhadap analisis frekuensi. DES sendiri sudah dianggap usang karena kunci 56-bit.
+      Namun ketika <strong>dikombinasikan</strong>, penyerang harus memecahkan lapisan DES terlebih dahulu
+      (mendapat output Vigenere), kemudian memecahkan Vigenere tanpa mengetahui panjang kuncinya.
+      Dua algoritma yang masing-masing lemah, bila disusun berlapis, menghasilkan keamanan yang jauh lebih tinggi
+      karena kompleksitas serangan meningkat secara eksponensial.
+    </p>
+  </div>
+</div>
+{% endblock %}
